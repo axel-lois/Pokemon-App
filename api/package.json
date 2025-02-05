@@ -7,8 +7,8 @@
     "start": "nodemon -L",
     "test": "mocha -w ./tests/**/*.spec.js"
   },
-  "author": "Henry",
-  "license": "ISC",
+  "author": "axel-lois",
+  "license": "MIT",
   "engines": {
     "node": ">=12.18.3",
     "npm": ">=6.14.6"

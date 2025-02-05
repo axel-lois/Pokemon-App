@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { Pokemon, Type } = require("../db");
 
-//Get forty pokemon from the api, as per Henry's request.
+//Get forty pokemon from the api.
 const getApiInfo = async (url) => {
   try {
     const apiInfo = await axios.get(url);
@@ -102,7 +102,7 @@ const getAllInfo = async () => {
   }
 };
 
-//Save the types from the api to the db (as per Henry's request :p)
+//Save the types from the api to the db
 const saveTypes = async () => {
   try {
     const apiInfo = await axios.get("https://pokeapi.co/api/v2/type");
@@ -119,7 +119,7 @@ const saveTypes = async () => {
   }
 };
 
-//Get the previously added to db types (as per Henry's request :p)
+//Get the previously added to db types 
 const getTypesFromDB = async () => {
   try {
     let typesFromDB = await Type.findAll();
