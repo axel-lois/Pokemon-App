@@ -13,15 +13,20 @@ import { validateForm } from "./validate";
 
 const PokemonCreateForm = () => {
   const dispatch = useDispatch();
-  //In case we are updating one.
   const { id } = useParams();
-  const pokemonToUpdate = useSelector((state) => state.pokemonCopy);
   const navigate = useNavigate();
+
+  // States globales
+  const pokemonToUpdate = useSelector((state) => state.pokemonCopy);
   const types = useSelector((state) => state.types);
+
+  // Estados locales
   const [errors, setErrors] = useState({});
   const [updated, setUpdated] = useState(false);
-  //to set the types on the div, for better UX
   const [selectedTypes, setSelectedTypes] = useState([]);
+  const [submitted, setSubmitted] = useState(false);
+  const [touched, setTouched] = useState({}); // Para saber si un campo fue “tocado”
+
   const [formState, setFormState] = useState({
     name: "",
     hp: "",
@@ -34,50 +39,85 @@ const PokemonCreateForm = () => {
     types: [],
   });
 
+  // Para obtener types y, si hay id, buscar el Pokémon a actualizar
   useEffect(() => {
     dispatch(getTypes());
-    id && dispatch(getSinglePokemon(id));
+    if (id) dispatch(getSinglePokemon(id));
   }, [dispatch, id]);
 
+  // Manejar click en íconos de tipos
   const handleImgClick = (e) => {
     if (!selectedTypes.includes(e.target.name) && selectedTypes.length < 2) {
-      selectedTypes.push(e.target.name);
+      const newTypes = [...selectedTypes, e.target.name];
+      setSelectedTypes(newTypes);
+      setFormState({ ...formState, types: newTypes });
+      setErrors(validateForm({ ...formState, types: newTypes }));
+
+      // Marcar 'types' como touched
+      setTouched((prev) => ({ ...prev, types: true }));
     }
-    setSelectedTypes(selectedTypes);
-    setFormState({ ...formState, types: selectedTypes });
-    setErrors(validateForm({ ...formState, types: selectedTypes }));
   };
 
+  // Eliminar el último tipo seleccionado
   const handleDelete = () => {
-    selectedTypes.pop();
-    setSelectedTypes(selectedTypes);
-    setFormState({
-      ...formState,
-      types: selectedTypes,
-    });
-    setErrors(validateForm({ ...formState, types: selectedTypes }));
+    const newTypes = [...selectedTypes];
+    newTypes.pop();
+    setSelectedTypes(newTypes);
+    setFormState({ ...formState, types: newTypes });
+    setErrors(validateForm({ ...formState, types: newTypes }));
+
+    // Marcar 'types' como touched
+    setTouched((prev) => ({ ...prev, types: true }));
   };
 
+  // Manejar cambios en los inputs
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    const newFormState = { ...formState, [name]: value };
+    
+    // Marcar como touched si no lo estaba (para mostrar error al tipear)
+    if (!touched[name]) {
+      setTouched((prev) => ({ ...prev, [name]: true }));
+    }
+    
+    setFormState(newFormState);
+    setErrors(validateForm(newFormState));
+  };
+
+  // Manejar blur para marcar touched también al salir del campo (opcional)
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  };
+
+  // Manejar submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    let createdOrUpdatedPokemon = formState;
-    createdOrUpdatedPokemon = {
+    setSubmitted(true); // Marcar que se hizo submit
+
+    // Convertir a number campos numéricos
+    const createdOrUpdatedPokemon = {
       ...formState,
-      hp: parseInt(createdOrUpdatedPokemon.hp),
-      attack: parseInt(createdOrUpdatedPokemon.attack),
-      defense: parseInt(createdOrUpdatedPokemon.defense),
-      speed: parseInt(createdOrUpdatedPokemon.speed),
-      weight: parseInt(createdOrUpdatedPokemon.weight),
-      height: parseInt(createdOrUpdatedPokemon.height),
+      hp: parseInt(formState.hp),
+      attack: parseInt(formState.attack),
+      defense: parseInt(formState.defense),
+      speed: parseInt(formState.speed),
+      weight: parseInt(formState.weight),
+      height: parseInt(formState.height),
     };
-    setErrors(validateForm(createdOrUpdatedPokemon));
-    //hp is a scapegoat as well
-    if (!Object.keys(errors).length && createdOrUpdatedPokemon.hp) {
+
+    // Validar
+    const currentErrors = validateForm(createdOrUpdatedPokemon);
+    setErrors(currentErrors);
+
+    // Chequear si no hay errores
+    if (Object.keys(currentErrors).length === 0) {
       if (!id) {
         dispatch(postPokemon(createdOrUpdatedPokemon));
       } else {
         dispatch(updatePokemon(id, createdOrUpdatedPokemon));
       }
+      // Reset
       setFormState({
         name: "",
         hp: "",
@@ -89,29 +129,15 @@ const PokemonCreateForm = () => {
         img: "",
         types: [],
       });
+      setSelectedTypes([]);
       navigate("/home");
     }
   };
 
-  const handleChange = (e) => {
-    setFormState({
-      ...formState,
-      [e.target.name]: e.target.value,
-    });
-    setErrors(
-      validateForm({
-        ...formState,
-        [e.target.name]: e.target.value,
-      })
-    );
-  };
-
-  //name is like a scapegoat, as if i put only pokemonToUpdate it goes in when it is an []
-  //Here i put the values of the created pokemon on the inputs.
+  // En caso de UPDATE: cargar datos en formState solo una vez
   if (id && pokemonToUpdate.name && !updated) {
-    setSelectedTypes(pokemonToUpdate.types);
+    setSelectedTypes(pokemonToUpdate.types || []);
     setFormState({
-      ...formState,
       name: pokemonToUpdate.name,
       hp: pokemonToUpdate.hp,
       attack: pokemonToUpdate.attack,
@@ -120,130 +146,190 @@ const PokemonCreateForm = () => {
       weight: pokemonToUpdate.weight,
       height: pokemonToUpdate.height,
       img: pokemonToUpdate.img,
-      types: pokemonToUpdate.types,
+      types: pokemonToUpdate.types || [],
     });
-    setUpdated(!updated);
+    setUpdated(true);
   }
+
+  // Helper para renderizar errores (campo input):
+  // Solo se muestra si (touched[field] || submitted) && errors[field]
+  const renderError = (field) => {
+    if ((touched[field] || submitted) && errors[field]) {
+      return <p className={Classes.errorMessage}>{errors[field]}</p>;
+    }
+    return null;
+  };
 
   return (
     <div className={Classes.container}>
       <NavLink to="/home">
         <button className={Classes.topButton}>BACK TO HOME</button>
       </NavLink>
+
       <form onSubmit={handleSubmit} className={Classes.form}>
-        <label>
-          Name
-          <input
-            className={errors.name && Classes.error}
-            onChange={handleChange}
-            value={formState.name}
-            name="name"
-            type="text"
-            placeholder="Insert name..."
-          />
-        </label>
-        <label>
-          Hp
-          <input
-            className={errors.hp && Classes.error}
-            onChange={handleChange}
-            value={formState.hp}
-            name="hp"
-            type="number"
-            min="1"
-            placeholder="Insert HP..."
-          />
-        </label>
-        <label>
-          Attack
-          <input
-            className={errors.attack && Classes.error}
-            onChange={handleChange}
-            value={formState.attack}
-            name="attack"
-            type="number"
-            min="1"
-            placeholder="Insert Attack..."
-          />
-        </label>
-        <label>
-          Defense
-          <input
-            className={errors.defense && Classes.error}
-            onChange={handleChange}
-            value={formState.defense}
-            name="defense"
-            type="number"
-            min="1"
-            placeholder="Insert Defense..."
-          />
-        </label>
-        <label>
-          Speed
-          <input
-            className={errors.speed && Classes.error}
-            onChange={handleChange}
-            value={formState.speed}
-            name="speed"
-            type="number"
-            min="1"
-            placeholder="Insert Speed..."
-          />
-        </label>
-        <label>
-          Weight
-          <input
-            className={errors.weight && Classes.error}
-            onChange={handleChange}
-            value={formState.weight}
-            name="weight"
-            type="number"
-            min="1"
-            placeholder="Insert Weight (kg)"
-          />
-        </label>
-        <label>
-          Height
-          <input
-            className={errors.height && Classes.error}
-            onChange={handleChange}
-            value={formState.height}
-            name="height"
-            type="number"
-            min="1"
-            placeholder="Insert Weight (cm)"
-          />
-        </label>
-        <label>
-          Image
-          <input
-            className={errors.img && Classes.error}
-            onChange={handleChange}
-            value={formState.img}
-            name="img"
-            type="url"
-            placeholder="Insert photo url..."
-          />
-        </label>
-        Types
-        <div
-          name="types"
-          className={errors.types ? Classes.typesWithError : Classes.types}
-        >
-          {selectedTypes &&
-            selectedTypes.map((type) => {
-              return <p key={type}>{type}</p>;
-            })}
-          {selectedTypes.length > 0 && (
-            <img
-              alt="deleteIcon"
-              onClick={handleDelete}
-              className={Classes.cross}
-              width="40px"
-              src={Cross}
+        {/* PRIMERA FILA: Name - Hp */}
+        <div className={Classes.row}>
+          {/* NAME */}
+          <label className={Classes.labelInput}>
+            Name
+            <input
+              className={(touched.name || submitted) && errors.name ? Classes.error : ""}
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={formState.name}
+              name="name"
+              type="text"
+              placeholder="Insert name..."
             />
-          )}
+            {renderError("name")}
+          </label>
+
+          {/* HP */}
+          <label className={Classes.labelInput}>
+            Hp
+            <input
+              className={(touched.hp || submitted) && errors.hp ? Classes.error : ""}
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={formState.hp}
+              name="hp"
+              type="number"
+              min="1"
+              placeholder="Insert HP..."
+            />
+            {renderError("hp")}
+          </label>
         </div>
+
+        {/* SEGUNDA FILA: Attack - Defense */}
+        <div className={Classes.row}>
+          <label className={Classes.labelInput}>
+            Attack
+            <input
+              className={(touched.attack || submitted) && errors.attack ? Classes.error : ""}
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={formState.attack}
+              name="attack"
+              type="number"
+              min="1"
+              placeholder="Insert Attack..."
+            />
+            {renderError("attack")}
+          </label>
+
+          <label className={Classes.labelInput}>
+            Defense
+            <input
+              className={(touched.defense || submitted) && errors.defense ? Classes.error : ""}
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={formState.defense}
+              name="defense"
+              type="number"
+              min="1"
+              placeholder="Insert Defense..."
+            />
+            {renderError("defense")}
+          </label>
+        </div>
+
+        {/* TERCERA FILA: Speed - Weight */}
+        <div className={Classes.row}>
+          <label className={Classes.labelInput}>
+            Speed
+            <input
+              className={(touched.speed || submitted) && errors.speed ? Classes.error : ""}
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={formState.speed}
+              name="speed"
+              type="number"
+              min="1"
+              placeholder="Insert Speed..."
+            />
+            {renderError("speed")}
+          </label>
+
+          <label className={Classes.labelInput}>
+            Weight
+            <input
+              className={(touched.weight || submitted) && errors.weight ? Classes.error : ""}
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={formState.weight}
+              name="weight"
+              type="number"
+              min="1"
+              placeholder="Insert Weight (kg)"
+            />
+            {renderError("weight")}
+          </label>
+        </div>
+
+        {/* CUARTA FILA: Height - Image */}
+        <div className={Classes.row}>
+          <label className={Classes.labelInput}>
+            Height
+            <input
+              className={(touched.height || submitted) && errors.height ? Classes.error : ""}
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={formState.height}
+              name="height"
+              type="number"
+              min="1"
+              placeholder="Insert Height (cm)"
+            />
+            {renderError("height")}
+          </label>
+
+          <label className={Classes.labelInput}>
+            Image
+            <input
+              className={(touched.img || submitted) && errors.img ? Classes.error : ""}
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={formState.img}
+              name="img"
+              type="url"
+              placeholder="Insert photo url..."
+            />
+            {renderError("img")}
+          </label>
+        </div>
+
+        {/* TIPOS */}
+        <label className={Classes.labelTypes}>
+          Types
+          <div
+            name="types"
+            className={
+              (touched.types || submitted) && errors.types
+                ? Classes.typesWithError
+                : Classes.types
+            }
+          >
+            {selectedTypes.map((type) => (
+              <p key={type}>{type}</p>
+            ))}
+            {selectedTypes.length > 0 && (
+              <img
+                alt="deleteIcon"
+                onClick={handleDelete}
+                className={Classes.cross}
+                width="40px"
+                src={Cross}
+              />
+            )}
+          </div>
+          {/* Mostrar error de types solo si “touched.types” o “submitted” */}
+          {(touched.types || submitted) && errors.types && (
+            <p className={Classes.errorMessage}>{errors.types}</p>
+          )}
+        </label>
+
+        {/* Íconos de tipos */}
         <div className={Classes.icons}>
           {types &&
             types.map((type) => {
@@ -259,14 +345,12 @@ const PokemonCreateForm = () => {
               );
             })}
         </div>
+
+        {/* BOTÓN SUBMIT */}
         <button type="submit">
           {id ? "Update Pokémon" : "Create Pokémon"}
         </button>
       </form>
-      <div className={Classes.errorDiv}>
-        <h3>Errors:</h3>
-        <p className={Classes.required}>- Field required</p>
-      </div>
     </div>
   );
 };

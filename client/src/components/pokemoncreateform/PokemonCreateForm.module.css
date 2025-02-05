@@ -10,105 +10,121 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* Contenedor principal */
 .container {
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
   align-items: center;
-  align-content: center;
+  min-height: 100vh; 
   justify-content: center;
-  height: 100vh;
-  overflow: scroll;
-  /* modified for deployment */
+  padding: 20px;
+  box-sizing: border-box;
 }
 
+/* El formulario como bloque central */
 .form {
-  font-size: 23px;
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 800px; /* Ajusta si quieres */
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* Fila para 2 inputs */
+.row {
+  display: flex;
+  width: 100%;
+  justify-content: space-between; 
+  gap: 15px; /* espacio horizontal entre los 2 label */
+  margin-bottom: 20px;
+}
+
+/* Cada label en la fila ocupa la mitad */
+.labelInput {
   display: flex;
   flex-direction: column;
   width: 50%;
-  justify-content: space-around;
-  align-items: center;
-  height: 800px;
-  margin-top: 19px;
-  /* modified for deployment */
 }
 
-.form label {
+/* Para el label que contenga Types (puede ser 100% si quieres que ocupe una fila sola) */
+.labelTypes {
   display: flex;
-  width: 70%;
   flex-direction: column;
-  justify-content: space-around;
-  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
 }
 
+/* Inputs en general */
 .form input {
   width: 100%;
-  border: 3px solid black;
-  padding: 8px 0px;
+  border: 2px solid black;
+  padding: 8px;
   border-radius: 5px;
   font-family: "Gamer";
-  font-size: 15px;
-  /* Modified for deployment */
+  font-size: 16px;
   text-align: center;
+  font-weight: bold;
+  box-sizing: border-box;
+  margin-top: 5px; /* para separar del label "Attack", "Defense", etc */
+}
+
+/* Inputs con error */
+.error {
+  border: 3px solid red !important;
+}
+
+/* Mensaje de error pequeño debajo del input */
+.errorMessage {
+  color: red;
+  font-size: 14px;
+  margin: 5px 0 0 0; 
   font-weight: bold;
 }
 
-.form button {
-  font-family: "Gamer";
-  padding: 10px 80px;
-  border: 5px solid black;
-  background-color: #db3d4b;
-  color: white;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
-  box-shadow: 3px 3px 10px 2px rgba(0, 0, 0, 0.75);
-  font-size: 20px;
-  /* Modified for deployment */
-  /* margin-top: 10px; */
-}
-
-.form button:hover {
-  background-color: #ffd622;
-}
-
+/* Para el contenedor Types */
 .types {
   background-color: #faf8f8;
   border: 3px solid black;
-  width: 70%;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  min-height: 65px;
-  font-size: 19px;
+  min-height: 50px;
+  font-size: 16px;
   border-radius: 5px;
   font-weight: bold;
+  margin-top: 5px;
 }
 
 .typesWithError {
   background-color: #faf8f8;
   border: 4px solid red;
-  width: 70%;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  min-height: 65px;
-  font-size: 19px;
+  min-height: 50px;
+  font-size: 16px;
   border-radius: 5px;
   font-weight: bold;
+  margin-top: 5px;
 }
 
+/* Íconos de los tipos */
 .icons {
   margin-top: 15px;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
   flex-wrap: wrap;
-  width: 60%;
+  width: 100%;
 }
+
 .icons div {
-  width: 10%;
+  width: 60px;
+  margin: 5px;
+  display: flex;
+  justify-content: center;
 }
 
 .icons img {
@@ -117,6 +133,7 @@ input[type="number"] {
   cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
+
 .icons img:hover {
   transform: scale(1.2);
 }
@@ -125,10 +142,10 @@ input[type="number"] {
   cursor: pointer;
 }
 
+/* Botón "Back To Home" */
 .topButton {
-  /* Modified for deployment */
   font-family: "Gamer";
-  padding: 5px 80px !important;
+  padding: 5px 40px !important;
   border: 5px solid black;
   background-color: #db3d4b;
   color: white;
@@ -136,26 +153,57 @@ input[type="number"] {
   cursor: pointer;
   transition: all 0.3s ease-in-out;
   box-shadow: 3px 3px 10px 2px rgba(0, 0, 0, 0.75);
-  font-size: 20px !important;
-  /* Modified for deployment */
+  font-size: 18px !important;
+  margin-bottom: 20px;
 }
+
 .topButton:hover {
   background-color: #ffd622;
 }
 
-.errorDiv {
-  border: 3px solid black;
-  background-color: #faf8f8;
+/* Botón "Create/Update" */
+.form button {
+  font-family: "Gamer";
+  padding: 10px 40px;
+  border: 5px solid black;
+  background-color: #db3d4b;
+  color: white;
   border-radius: 10px;
-  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 3px 3px 10px 2px rgba(0, 0, 0, 0.75);
+  font-size: 18px;
+  margin-bottom: 30px;
 }
 
-.error {
-  border: 4px solid red !important;
+.form button:hover {
+  background-color: #ffd622;
 }
 
-.required{
-  font-weight: bold;
-  color: red;
+/* MEDIA QUERIES para pantallas más pequeñas */
+@media (max-width: 768px) {
+  .form {
+    font-size: 16px;
+    max-width: 600px;
+  }
+
+  .row {
+    flex-direction: column;
+  }
+
+  .labelInput {
+    width: 100%;
+  }
 }
 
+@media (max-width: 480px) {
+  .form {
+    font-size: 14px;
+    max-width: 95%;
+  }
+
+  .icons img {
+    width: 35px;
+    height: 35px;
+  }
+}

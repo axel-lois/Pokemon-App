@@ -20,17 +20,12 @@ body {
 
 .sectionFlex {
   display: flex;
-  flex-direction: row;
-  margin-left: 180px; 
-  /* change margin left for deploy */
+  justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
-  width: 100%;
-  justify-items: center;
-  margin-top: -50px;
 }
 
 .filters {
-  width: 50%;
   height: 180px;
   display: flex;
   flex-direction: column;
@@ -69,11 +64,6 @@ body {
   flex-wrap: wrap;
 }
 
-.loader {
-  position: absolute;
-  left: 800px;
-  top: 400px;
-}
 
 .refreshButton {
   background-color: transparent;
@@ -92,9 +82,4 @@ body {
   transform: rotate(360deg);
 }
 
-.notFound {
-  position: absolute;
-  top: 320px;
-  left: 600px;
-}
 

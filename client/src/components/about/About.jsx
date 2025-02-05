@@ -15,10 +15,6 @@ const About = () => {
         <h1>About me</h1>
         <p>Hi! My name is Axel and I am the creator of this SPA.</p>
         <p>
-          This Project was made while studying in Henry's bootcamp, as my
-          individual project.
-        </p>
-        <p>
           It's made from bottom to top by me, meaning i developed both backend
           and frontend.
         </p>
@@ -29,7 +25,7 @@ const About = () => {
         <div className={Classes.main__images}>
           <a
             rel="noreferrer"
-            href="https://www.linkedin.com/in/axel-lois-740ba392/"
+            href="https://www.linkedin.com/in/axel-lois-dev/"
             target="_blank"
           >
             <img alt="linkedin" src={Linkedin} />
